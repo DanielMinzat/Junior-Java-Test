@@ -60,4 +60,12 @@ public class CarService {
         return policyRepository.findByEndDate(LocalDate.now().minusDays(1));
     }
 
+    public List<InsurancePolicy> getAllInsurancePolicies() {
+        return policyRepository.findAll();
+    }
+
+    public InsurancePolicy addInsurancePolicy(InsurancePolicy insurancePolicy) {
+        return policyRepository.save(insurancePolicy);
+    }
+
 }

@@ -2,10 +2,12 @@ package com.example.carins.web;
 
 import com.example.carins.model.Car;
 import com.example.carins.model.InsuranceClaim;
+import com.example.carins.model.InsurancePolicy;
 import com.example.carins.service.CarService;
 import com.example.carins.web.dto.CarDto;
 import com.example.carins.web.dto.ClaimDto;
 import com.example.carins.web.dto.ClaimResponseDto;
+import com.example.carins.web.dto.InsurancePolicyDto;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -59,6 +61,11 @@ public class CarController {
         return service.listInsuranceClaim(carId).stream().map(this::toInsuranceClaimResponse).toList();
     }
 
+    @GetMapping("/cars/policies")
+    public List<InsurancePolicyDto> getAllInsurancePolicies() {
+        return service.getAllInsurancePolicies().stream().map(this::toInsurancePolicyDto).toList();
+    }
+
     @PostMapping("cars/{carId}/claims")
     public ResponseEntity<?> registerInsuranceClaim(@PathVariable Long carId, @Valid @RequestBody ClaimDto claimDto) {
         Car car = service.findCarById(carId);
@@ -68,6 +75,16 @@ public class CarController {
                         .pathSegment(claim.getId().toString())
                         .buildAndExpand().toUri())
                 .body(toInsuranceClaimResponse(claim));
+    }
+
+    @PostMapping("/cars/policies")
+    public ResponseEntity<?> createInsurancePolicy(@Valid @RequestBody InsurancePolicyDto insurancePolicyDto) {
+        Car car = service.findCarById(insurancePolicyDto.carId());
+        InsurancePolicy insurancePolicy = service.addInsurancePolicy(toInsurancePolicy(insurancePolicyDto,car));
+        return ResponseEntity.created(ServletUriComponentsBuilder.fromCurrentRequest()
+                        .pathSegment(insurancePolicy.getId().toString())
+                        .buildAndExpand().toUri())
+                .body(toInsurancePolicyDto(insurancePolicy));
     }
 
     private CarDto toDto(Car c) {
@@ -88,6 +105,20 @@ public class CarController {
                 insuranceClaim.getClaimDate(),
                 insuranceClaim.getDescription(),
                 insuranceClaim.getAmount());
+    }
+
+
+    private InsurancePolicy toInsurancePolicy(InsurancePolicyDto insurancePolicyDto, Car car) {
+        return new InsurancePolicy(car,
+                insurancePolicyDto.provider(),
+                insurancePolicyDto.startDate(),
+                insurancePolicyDto.endDate());
+    }
+    private InsurancePolicyDto toInsurancePolicyDto(InsurancePolicy insurancePolicy) {
+        return new InsurancePolicyDto(insurancePolicy.getCar().getId(),
+                insurancePolicy.getProvider(),
+                insurancePolicy.getStartDate(),
+                insurancePolicy.getEndDate());
     }
 
     public record InsuranceValidityResponse(Long carId, String date, boolean valid) {}
