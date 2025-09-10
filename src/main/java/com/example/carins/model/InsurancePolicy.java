@@ -1,12 +1,21 @@
 package com.example.carins.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "insurancepolicy")
 public class InsurancePolicy {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "policy_seq")
+    @SequenceGenerator(
+                    name = "policy_seq",
+                    sequenceName = "policy_seq",
+                    initialValue = 10,
+                    allocationSize = 50
+
+    )
     private Long id;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
@@ -14,6 +23,8 @@ public class InsurancePolicy {
 
     private String provider;
     private LocalDate startDate;
+
+    @Column(nullable = false)
     private LocalDate endDate; // nullable == open-ended
 
     public InsurancePolicy() {}
